@@ -1,20 +1,23 @@
 import axios from 'axios'
 
+// In production/dev → uses VITE_API_URL from Vercel environment
+// In local → uses Vite proxy to localhost:8080
+const baseURL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 15000,
 })
 
-// Attach token on EVERY request automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Handle 401 globally
 api.interceptors.response.use(
   (res) => res,
   (err) => {
