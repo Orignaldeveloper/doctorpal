@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+
+  mongodb:
+    image: mongo:7.0
+    container_name: doctorpal-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: doctorpal
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - doctorpal-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: doctorpal-backend
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/doctorpal
+      MONGO_DB: doctorpal
+      JWT_SECRET: ${JWT_SECRET:-DoctorPalSuperSecretKeyForJWTTokenGeneration2024!}
+      JWT_EXPIRATION: 86400000
+      CORS_ORIGINS: http://localhost,http://localhost:80
+    ports:
+      - "8080:8080"
+    networks:
+      - doctorpal-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: doctorpal-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - doctorpal-net
+
+volumes:
+  mongo_data:
+
+networks:
+  doctorpal-net:
+    driver: bridge
