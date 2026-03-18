@@ -1,16 +1,25 @@
 import axios from 'axios'
 
-// In production/dev → uses VITE_API_URL from Vercel environment
-// In local → uses Vite proxy to localhost:8080
+// Detect which backend to use based on current URL
+const getBaseURL = () => {
+  const hostname = window.location.hostname
 
-// Uses VITE_API_URL set in Vercel environment variables
-// Falls back to local proxy for local development
-const baseURL = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api'
+  // Local development
+  if (hostname === 'localhost') {
+    return '/api'
+  }
+
+  // Dev environment
+  if (hostname.includes('dev')) {
+    return 'https://doctorpal-backend-dev.onrender.com/api'
+  }
+
+  // Prod environment
+  return 'https://doctorpal-backend-prod.onrender.com/api'
+}
 
 const api = axios.create({
-  baseURL,
+  baseURL: getBaseURL(),
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 })
