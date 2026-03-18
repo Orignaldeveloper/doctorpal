@@ -2,6 +2,9 @@ import axios from 'axios'
 
 // In production/dev → uses VITE_API_URL from Vercel environment
 // In local → uses Vite proxy to localhost:8080
+
+// Uses VITE_API_URL set in Vercel environment variables
+// Falls back to local proxy for local development
 const baseURL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : '/api'
