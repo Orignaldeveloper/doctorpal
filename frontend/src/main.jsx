@@ -5,6 +5,8 @@ import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './styles/index.css'
 
+console.log("build v3")
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
