@@ -69,7 +69,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 p-3 bg-teal-50 rounded-lg border border-teal-100">
-            <p className="text-xs text-teal-700 text-center font-medium mb-1">Contact : 7875573029/8766425371</p>
+            <p className="text-xs text-teal-700 text-center font-medium mb-1">Contact no : 7875573029/8766425371</p>
             <p className="text-xs text-yellow-500 text-center font-bold ">BIJODE & SON'S PRODUCT</p>
           </div>
         </div>
