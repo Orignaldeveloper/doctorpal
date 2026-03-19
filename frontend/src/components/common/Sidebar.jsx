@@ -1,10 +1,27 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
 export default function Sidebar({ navItems, role, roleBadgeClass }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [isOpen, setIsOpen] = useState(false)
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setIsOpen(false)
+  }, [location.pathname])
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setIsOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -12,12 +29,26 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
     navigate('/login')
   }
 
-  return (
-    <aside className="w-52 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0">
+  const sidebarContent = (
+    <aside className={`
+      flex flex-col h-full bg-white border-r border-gray-100
+      w-52 flex-shrink-0
+    `}>
       {/* Logo */}
       <div className="px-4 py-4 border-b border-gray-100">
-        <div className="font-display text-xl text-teal-600">DoctorPal</div>
-        <div className="text-xs text-gray-400 mt-0.5">Clinic Management</div>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-display text-xl text-teal-600">DoctorPal</div>
+            <div className="text-xs text-gray-400 mt-0.5">Clinic Management</div>
+          </div>
+          {/* Close button — mobile only */}
+          <button
+            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+            onClick={() => setIsOpen(false)}
+          >
+            ✕
+          </button>
+        </div>
         <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeClass}`}>
           {role}
         </span>
@@ -36,7 +67,7 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 mx-2 px-3 py-2 rounded-lg text-sm transition-all mb-0.5 ${
+                  `flex items-center gap-2.5 mx-2 px-3 py-2.5 rounded-lg text-sm transition-all mb-0.5 ${
                     isActive
                       ? 'bg-teal-50 text-teal-700 font-medium'
                       : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
@@ -70,5 +101,37 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
         </button>
       </div>
     </aside>
+  )
+
+  return (
+    <>
+      {/* Mobile hamburger button — fixed top left */}
+      <button
+        className="md:hidden fixed top-3 left-3 z-50 p-2.5 bg-white rounded-xl shadow-md border border-gray-100 text-gray-600"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? '✕' : '☰'}
+      </button>
+
+      {/* Desktop sidebar — always visible */}
+      <div className="hidden md:flex md:flex-col md:h-screen md:sticky md:top-0">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile sidebar — slides in from left */}
+      {isOpen && (
+        <>
+          {/* Dark overlay */}
+          <div
+            className="md:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Sidebar panel */}
+          <div className="md:hidden fixed top-0 left-0 h-full z-50 shadow-xl">
+            {sidebarContent}
+          </div>
+        </>
+      )}
+    </>
   )
 }
