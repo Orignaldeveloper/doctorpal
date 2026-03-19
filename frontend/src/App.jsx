@@ -6,6 +6,7 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminOverview from './pages/admin/AdminOverview'
 import AdminDoctors from './pages/admin/AdminDoctors'
 import AdminStats from './pages/admin/AdminStats'
+import AdminSuperAdmins from './pages/admin/AdminSuperAdmins'
 import DoctorLayout from './pages/doctor/DoctorLayout'
 import DoctorQueue from './pages/doctor/DoctorQueue'
 import DoctorPatients from './pages/doctor/DoctorPatients'
@@ -78,6 +79,7 @@ export default function App() {
           <Route index element={<AdminOverview />} />
           <Route path="doctors" element={<AdminDoctors />} />
           <Route path="stats" element={<AdminStats />} />
+          <Route path="super-admins" element={<AdminSuperAdmins />} />
         </Route>
 
         {/* Doctor */}

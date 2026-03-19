@@ -1,7 +1,7 @@
 package com.doctorpal.service.impl;
 
 import com.doctorpal.dto.request.CreateDoctorRequest;
-import com.doctorpal.dto.response.ApiResponse;
+import com.doctorpal.dto.request.CreateSuperAdminRequest;
 import com.doctorpal.exception.BadRequestException;
 import com.doctorpal.exception.ResourceNotFoundException;
 import com.doctorpal.model.Doctor;
@@ -27,12 +27,13 @@ public class AdminService {
     private final VisitRepository visitRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // ── DOCTOR MANAGEMENT ────────────────────────────────────────────
+
     public Doctor createDoctor(CreateDoctorRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new BadRequestException("Email already registered: " + req.getEmail());
         }
 
-        // Create user account
         User user = User.builder()
                 .name(req.getDoctorName())
                 .email(req.getEmail())
@@ -42,7 +43,6 @@ public class AdminService {
                 .build();
         user = userRepository.save(user);
 
-        // Create doctor profile
         Doctor doctor = Doctor.builder()
                 .userId(user.getId())
                 .doctorName(req.getDoctorName())
@@ -63,7 +63,6 @@ public class AdminService {
                 .build();
         doctor = doctorRepository.save(doctor);
 
-        // Link doctorId to user
         user.setDoctorId(doctor.getId());
         userRepository.save(user);
 
@@ -82,13 +81,11 @@ public class AdminService {
         doctor.setStatus(newStatus);
         doctorRepository.save(doctor);
 
-        // Update user account status too
         userRepository.findByEmail(doctor.getEmail()).ifPresent(user -> {
             user.setStatus(newStatus == Doctor.DoctorStatus.ACTIVE
                     ? User.UserStatus.ACTIVE : User.UserStatus.INACTIVE);
             userRepository.save(user);
 
-            // Deactivate receptionists under this doctor if doctor goes inactive
             if (newStatus == Doctor.DoctorStatus.INACTIVE) {
                 userRepository.findByDoctorIdAndRole(doctorId, User.Role.RECEPTIONIST)
                         .forEach(r -> {
@@ -116,7 +113,6 @@ public class AdminService {
         doctor.setClinicStartTime(req.getClinicStartTime());
         doctor.setClinicEndTime(req.getClinicEndTime());
 
-        // Only update password if provided
         if (req.getPassword() != null && !req.getPassword().isBlank()) {
             userRepository.findByEmail(doctor.getEmail()).ifPresent(user -> {
                 user.setPassword(passwordEncoder.encode(req.getPassword()));
@@ -127,12 +123,57 @@ public class AdminService {
         return doctorRepository.save(doctor);
     }
 
+    // ── SUPER ADMIN MANAGEMENT ────────────────────────────────────────
+
+    public User createSuperAdmin(CreateSuperAdminRequest req) {
+        // Check email not already used
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new BadRequestException("Email already registered: " + req.getEmail());
+        }
+
+        User superAdmin = User.builder()
+                .name(req.getName())
+                .email(req.getEmail())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .role(User.Role.SUPER_ADMIN)
+                .status(User.UserStatus.ACTIVE)
+                .build();
+
+        return userRepository.save(superAdmin);
+    }
+
+    public List<User> getAllSuperAdmins() {
+        return userRepository.findByRole(User.Role.SUPER_ADMIN);
+    }
+
+    public User updateSuperAdminStatus(String userId, String status, String currentUserEmail) {
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Super Admin not found"));
+
+        // Security check — must be a super admin
+        if (targetUser.getRole() != User.Role.SUPER_ADMIN) {
+            throw new BadRequestException("User is not a Super Admin");
+        }
+
+        // Prevent self-deactivation
+        if (targetUser.getEmail().equals(currentUserEmail)) {
+            throw new BadRequestException("You cannot deactivate your own account");
+        }
+
+        User.UserStatus newStatus = User.UserStatus.valueOf(status.toUpperCase());
+        targetUser.setStatus(newStatus);
+        return userRepository.save(targetUser);
+    }
+
+    // ── PLATFORM STATS ───────────────────────────────────────────────
+
     public Map<String, Object> getPlatformStats() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalDoctors", doctorRepository.count());
         stats.put("activeDoctors", doctorRepository.findByStatus(Doctor.DoctorStatus.ACTIVE).size());
         stats.put("inactiveDoctors", doctorRepository.findByStatus(Doctor.DoctorStatus.INACTIVE).size());
         stats.put("totalReceptionists", userRepository.findByRole(User.Role.RECEPTIONIST).size());
+        stats.put("totalSuperAdmins", userRepository.findByRole(User.Role.SUPER_ADMIN).size());
         stats.put("patientsToday", visitRepository.countByDoctorIdAndVisitDate(null, LocalDate.now()));
         return stats;
     }

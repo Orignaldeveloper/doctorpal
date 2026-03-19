@@ -6,8 +6,9 @@ const navItems = [
     label: 'Platform',
     items: [
       { to: '/admin', end: true, icon: '◈', label: 'Overview' },
-      { to: '/admin/doctors',       icon: '⚕', label: 'Doctors' },
-      { to: '/admin/stats',         icon: '▦', label: 'Statistics' },
+      { to: '/admin/doctors',      icon: '⚕', label: 'Doctors' },
+      { to: '/admin/stats',        icon: '▦', label: 'Statistics' },
+      { to: '/admin/super-admins', icon: '★', label: 'Super Admins' },
     ],
   },
 ]

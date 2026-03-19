@@ -13,6 +13,9 @@ export const adminAPI = {
   updateDoctor:        (id, data)   => api.put(`/admin/doctors/${id}`, data),
   updateDoctorStatus:  (id, status) => api.patch(`/admin/doctors/${id}/status?status=${status}`),
   getStats:            ()           => api.get('/admin/stats'),
+  getSuperAdmins:      ()           => api.get('/admin/super-admins'),
+  createSuperAdmin:    (data)       => api.post('/admin/super-admins', data),
+  updateSuperAdminStatus: (id, status) => api.patch(`/admin/super-admins/${id}/status?status=${status}`),
 }
 
 // ── DOCTOR ────────────────────────────────────────────────────────

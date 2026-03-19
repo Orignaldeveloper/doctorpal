@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import api from '../api/axios'
 
 const AuthContext = createContext(null)
@@ -6,22 +6,23 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
-  const initialized           = useRef(false)
 
   useEffect(() => {
-    // Run only ONCE — prevent multiple re-renders
-    if (initialized.current) return
-    initialized.current = true
-
     const token  = localStorage.getItem('token')
     const stored = localStorage.getItem('user')
 
     if (token && stored) {
       try {
         const parsedUser = JSON.parse(stored)
-        // Set token in axios before setting user
+        // Only store essential fields — never trust extra fields
+        const safeUser = {
+          email:    parsedUser.email,
+          name:     parsedUser.name,
+          role:     parsedUser.role,
+          doctorId: parsedUser.doctorId,
+        }
+        setUser(safeUser)
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-        setUser(parsedUser)
       } catch {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
@@ -33,11 +34,20 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
     const { token, ...userInfo } = data.data
+
+    // Only save essential fields to localStorage
+    const safeUser = {
+      email:    userInfo.email,
+      name:     userInfo.name,
+      role:     userInfo.role,
+      doctorId: userInfo.doctorId,
+    }
+
     localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(userInfo))
+    localStorage.setItem('user', JSON.stringify(safeUser))
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    setUser(userInfo)
-    return userInfo
+    setUser(safeUser)
+    return safeUser
   }
 
   const logout = () => {
