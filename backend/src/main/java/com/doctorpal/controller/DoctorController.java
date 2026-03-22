@@ -6,6 +6,7 @@ import com.doctorpal.dto.response.QueueEntryResponse;
 import com.doctorpal.dto.response.ReportResponse;
 import com.doctorpal.model.Patient;
 import com.doctorpal.model.User;
+import com.doctorpal.repository.UserRepository;
 import com.doctorpal.service.impl.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,7 +30,7 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorService doctorService;
-    private final com.doctorpal.repository.UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private String getDoctorId(UserDetails ud) {
         return userRepository.findByEmail(ud.getUsername())
@@ -49,8 +50,10 @@ public class DoctorController {
 
     @GetMapping("/receptionists")
     @Operation(summary = "Get all receptionists under this doctor")
-    public ResponseEntity<ApiResponse<List<User>>> getReceptionists(@AuthenticationPrincipal UserDetails ud) {
-        return ResponseEntity.ok(ApiResponse.success(doctorService.getReceptionists(getDoctorId(ud))));
+    public ResponseEntity<ApiResponse<List<User>>> getReceptionists(
+            @AuthenticationPrincipal UserDetails ud) {
+        return ResponseEntity.ok(ApiResponse.success(
+                doctorService.getReceptionists(getDoctorId(ud))));
     }
 
     @PatchMapping("/receptionists/{userId}/toggle")
@@ -66,13 +69,16 @@ public class DoctorController {
 
     @GetMapping("/queue")
     @Operation(summary = "Get today's live patient queue")
-    public ResponseEntity<ApiResponse<List<QueueEntryResponse>>> getQueue(@AuthenticationPrincipal UserDetails ud) {
-        return ResponseEntity.ok(ApiResponse.success(doctorService.getTodayQueue(getDoctorId(ud))));
+    public ResponseEntity<ApiResponse<List<QueueEntryResponse>>> getQueue(
+            @AuthenticationPrincipal UserDetails ud) {
+        return ResponseEntity.ok(ApiResponse.success(
+                doctorService.getTodayQueue(getDoctorId(ud))));
     }
 
     @PostMapping("/queue/next")
-    @Operation(summary = "Call next patient (completes current, promotes next WAITING)")
-    public ResponseEntity<ApiResponse<QueueEntryResponse>> nextPatient(@AuthenticationPrincipal UserDetails ud) {
+    @Operation(summary = "Call next patient")
+    public ResponseEntity<ApiResponse<QueueEntryResponse>> nextPatient(
+            @AuthenticationPrincipal UserDetails ud) {
         return ResponseEntity.ok(ApiResponse.success("Next patient called",
                 doctorService.callNextPatient(getDoctorId(ud))));
     }
@@ -87,22 +93,22 @@ public class DoctorController {
                 doctorService.updateVisitStatus(visitId, getDoctorId(ud), status)));
     }
 
-      @DeleteMapping("/visits/{visitId}")
+    @PatchMapping("/visits/{visitId}/skip")
+    @Operation(summary = "Skip a patient - marks as SKIPPED")
+    public ResponseEntity<ApiResponse<QueueEntryResponse>> skipPatient(
+            @AuthenticationPrincipal UserDetails ud,
+            @PathVariable String visitId) {
+        return ResponseEntity.ok(ApiResponse.success("Patient skipped",
+                doctorService.updateVisitStatus(visitId, getDoctorId(ud), "SKIPPED")));
+    }
+
+    @DeleteMapping("/visits/{visitId}")
     @Operation(summary = "Delete a visit entry")
     public ResponseEntity<ApiResponse<Void>> deleteVisit(
             @AuthenticationPrincipal UserDetails ud,
             @PathVariable String visitId) {
         doctorService.deleteVisit(visitId, getDoctorId(ud));
         return ResponseEntity.ok(ApiResponse.success("Visit deleted", null));
-    }
-
-    @PatchMapping("/visits/{visitId}/skip")
-    @Operation(summary = "Skip a patient — marks as SKIPPED")
-    public ResponseEntity<ApiResponse<QueueEntryResponse>> skipPatient(
-            @AuthenticationPrincipal UserDetails ud,
-            @PathVariable String visitId) {
-        return ResponseEntity.ok(ApiResponse.success("Patient skipped",
-                doctorService.updateVisitStatus(visitId, getDoctorId(ud), "SKIPPED")));
     }
 
     // ── PATIENTS ──────────────────────────────────────────────────
@@ -112,7 +118,8 @@ public class DoctorController {
     public ResponseEntity<ApiResponse<List<Patient>>> searchPatients(
             @AuthenticationPrincipal UserDetails ud,
             @RequestParam(required = false) String q) {
-        return ResponseEntity.ok(ApiResponse.success(doctorService.searchPatients(getDoctorId(ud), q)));
+        return ResponseEntity.ok(ApiResponse.success(
+                doctorService.searchPatients(getDoctorId(ud), q)));
     }
 
     @GetMapping("/patients/{patientId}/history")
@@ -128,19 +135,25 @@ public class DoctorController {
 
     @GetMapping("/reports/daily")
     @Operation(summary = "Daily report for today")
-    public ResponseEntity<ApiResponse<ReportResponse>> dailyReport(@AuthenticationPrincipal UserDetails ud) {
-        return ResponseEntity.ok(ApiResponse.success(doctorService.getDailyReport(getDoctorId(ud))));
+    public ResponseEntity<ApiResponse<ReportResponse>> dailyReport(
+            @AuthenticationPrincipal UserDetails ud) {
+        return ResponseEntity.ok(ApiResponse.success(
+                doctorService.getDailyReport(getDoctorId(ud))));
     }
 
     @GetMapping("/reports/weekly")
     @Operation(summary = "Weekly report (last 7 days)")
-    public ResponseEntity<ApiResponse<ReportResponse>> weeklyReport(@AuthenticationPrincipal UserDetails ud) {
-        return ResponseEntity.ok(ApiResponse.success(doctorService.getWeeklyReport(getDoctorId(ud))));
+    public ResponseEntity<ApiResponse<ReportResponse>> weeklyReport(
+            @AuthenticationPrincipal UserDetails ud) {
+        return ResponseEntity.ok(ApiResponse.success(
+                doctorService.getWeeklyReport(getDoctorId(ud))));
     }
 
     @GetMapping("/reports/monthly")
     @Operation(summary = "Monthly report (current month)")
-    public ResponseEntity<ApiResponse<ReportResponse>> monthlyReport(@AuthenticationPrincipal UserDetails ud) {
-        return ResponseEntity.ok(ApiResponse.success(doctorService.getMonthlyReport(getDoctorId(ud))));
+    public ResponseEntity<ApiResponse<ReportResponse>> monthlyReport(
+            @AuthenticationPrincipal UserDetails ud) {
+        return ResponseEntity.ok(ApiResponse.success(
+                doctorService.getMonthlyReport(getDoctorId(ud))));
     }
 }
