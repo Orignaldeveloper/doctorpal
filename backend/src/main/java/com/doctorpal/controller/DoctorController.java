@@ -30,7 +30,6 @@ public class DoctorController {
 
     private final DoctorService doctorService;
     private final com.doctorpal.repository.UserRepository userRepository;
-    private final com.doctorpal.repository.DoctorRepository doctorRepository;
 
     private String getDoctorId(UserDetails ud) {
         return userRepository.findByEmail(ud.getUsername())

@@ -3,7 +3,7 @@ package com.doctorpal.service.impl;
 import com.doctorpal.dto.request.LoginRequest;
 import com.doctorpal.dto.response.AuthResponse;
 import com.doctorpal.exception.BadRequestException;
-import com.doctorpal.model.Doctor;
+
 import com.doctorpal.model.User;
 import com.doctorpal.repository.DoctorRepository;
 import com.doctorpal.repository.UserRepository;
