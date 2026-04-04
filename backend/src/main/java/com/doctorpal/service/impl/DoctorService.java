@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class DoctorService {
 
     private final UserRepository userRepository;
@@ -106,6 +107,26 @@ public class DoctorService {
         if (!doctorId.equals(visit.getDoctorId())) throw new BadRequestException("Unauthorized");
         visitRepository.delete(visit);
     }
+
+    // Runs every day at midnight — cleans up stale WITH_DOCTOR visits from previous days
+@org.springframework.scheduling.annotation.Scheduled(cron = "0 1 0 * * *")
+public void autoCompleteStaleVisits() {
+    List<Visit> staleVisits = visitRepository.findAll().stream()
+            .filter(v -> v.getStatus() == Visit.VisitStatus.WITH_DOCTOR
+                    && v.getVisitDate() != null
+                    && v.getVisitDate().isBefore(java.time.LocalDate.now()))
+            .collect(java.util.stream.Collectors.toList());
+
+    staleVisits.forEach(v -> {
+        v.setStatus(Visit.VisitStatus.COMPLETED);
+        visitRepository.save(v);
+    });
+
+    if (!staleVisits.isEmpty()) {
+        log.info("Auto-completed {} stale WITH_DOCTOR visits from previous days",
+                staleVisits.size());
+    }
+}
 
     // ── PATIENT HISTORY ─────────────────────────────────────────────
 
