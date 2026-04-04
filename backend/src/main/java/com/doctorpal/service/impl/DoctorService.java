@@ -80,13 +80,14 @@ public class DoctorService {
         return buildQueueEntry(visit, doctorId);
     }
 
-    public QueueEntryResponse callNextPatient(String doctorId) {
-        // Complete current WITH_DOCTOR visit
-        visitRepository.findByDoctorIdAndStatusIn(doctorId,
-                List.of(Visit.VisitStatus.WITH_DOCTOR)).ifPresent(v -> {
-            v.setStatus(Visit.VisitStatus.COMPLETED);
-            visitRepository.save(v);
-        });
+     public QueueEntryResponse callNextPatient(String doctorId) {
+        // Complete ALL current WITH_DOCTOR visits (fix for multiple results)
+        visitRepository.findByDoctorIdAndVisitDateAndStatus(
+                doctorId, LocalDate.now(), Visit.VisitStatus.WITH_DOCTOR)
+                .forEach(v -> {
+                    v.setStatus(Visit.VisitStatus.COMPLETED);
+                    visitRepository.save(v);
+                });
 
         // Get next WAITING
         List<Visit> waiting = visitRepository

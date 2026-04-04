@@ -13,7 +13,7 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
     List<Visit> findByDoctorIdAndVisitDateOrderByTokenNumberAsc(String doctorId, LocalDate visitDate);
     List<Visit> findByDoctorIdAndVisitDateAndStatus(String doctorId, LocalDate visitDate, Visit.VisitStatus status);
     List<Visit> findByPatientIdOrderByVisitDateDesc(String patientId);
-    Optional<Visit> findByDoctorIdAndStatusIn(String doctorId, List<Visit.VisitStatus> statuses);
+    List<Visit> findByDoctorIdAndStatusIn(String doctorId, List<Visit.VisitStatus> statuses);
     long countByDoctorIdAndVisitDate(String doctorId, LocalDate date);
     long countByDoctorIdAndVisitDateAndStatus(String doctorId, LocalDate date, Visit.VisitStatus status);
     List<Visit> findByDoctorIdAndVisitDateBetween(String doctorId, LocalDate from, LocalDate to);
