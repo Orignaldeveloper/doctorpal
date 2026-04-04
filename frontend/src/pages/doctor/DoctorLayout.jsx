@@ -6,7 +6,7 @@ const navItems = [
     label: 'OPD',
     items: [
       { to: '/doctor',             end: true, icon: '⚡', label: 'Live Queue' },
-      { to: '/doctor/patients',             icon: '👤', label: 'Patients' },
+      { to: '/doctor/patients',             icon: '👤', label: 'Patient History' },
       { to: '/doctor/reports',              icon: '▦',  label: 'Reports' },
     ],
   },

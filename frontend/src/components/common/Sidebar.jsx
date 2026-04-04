@@ -5,20 +5,17 @@ import toast from 'react-hot-toast'
 
 export default function Sidebar({ navItems, role, roleBadgeClass }) {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [isOpen, setIsOpen] = useState(false)
+  const navigate         = useNavigate()
+  const location         = useLocation()
+  const [isOpen, setIsOpen]       = useState(false)   // mobile slide-in
+  const [collapsed, setCollapsed] = useState(false)   // desktop collapse
 
-  // Close sidebar on route change (mobile)
-  useEffect(() => {
-    setIsOpen(false)
-  }, [location.pathname])
+  // Close mobile sidebar on route change
+  useEffect(() => { setIsOpen(false) }, [location.pathname])
 
-  // Close sidebar when clicking outside on mobile
+  // Close mobile sidebar on resize to desktop
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) setIsOpen(false)
-    }
+    const handleResize = () => { if (window.innerWidth >= 768) setIsOpen(false) }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -30,12 +27,10 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
   }
 
   const sidebarContent = (
-    <aside className={`
-      flex flex-col h-full bg-white border-r border-gray-100
-      w-52 flex-shrink-0
-    `}>
+    <aside className="flex flex-col h-full bg-white border-r border-gray-100 w-64 flex-shrink-0">
+
       {/* Logo */}
-      <div className="px-4 py-4 border-b border-gray-100">
+      <div className="px-5 py-4 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <div>
             <div className="font-display text-xl text-teal-600">DoctorPal</div>
@@ -47,6 +42,14 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
             onClick={() => setIsOpen(false)}
           >
             ✕
+          </button>
+          {/* Collapse button — desktop only */}
+          <button
+            className="hidden md:flex p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-teal-600 transition-colors"
+            onClick={() => setCollapsed(true)}
+            title="Collapse sidebar"
+          >
+            ←
           </button>
         </div>
         <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${roleBadgeClass}`}>
@@ -105,7 +108,7 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
 
   return (
     <>
-      {/* Mobile hamburger button — fixed top left */}
+      {/* ── MOBILE — hamburger button ── */}
       <button
         className="md:hidden fixed top-3 left-3 z-50 p-2.5 bg-white rounded-xl shadow-md border border-gray-100 text-gray-600"
         onClick={() => setIsOpen(!isOpen)}
@@ -113,20 +116,31 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
         {isOpen ? '✕' : '☰'}
       </button>
 
-      {/* Desktop sidebar — always visible */}
-      <div className="hidden md:flex md:flex-col md:h-screen md:sticky md:top-0">
-        {sidebarContent}
-      </div>
+      {/* ── DESKTOP — collapsed toggle button ── */}
+      {collapsed && (
+        <button
+          className="hidden md:flex fixed top-3 left-3 z-50 p-2.5 bg-white rounded-xl shadow-md border border-gray-100 text-gray-600 hover:text-teal-600 transition-colors items-center gap-1.5 text-sm"
+          onClick={() => setCollapsed(false)}
+          title="Open sidebar"
+        >
+          ☰ <span className="text-xs font-medium">Menu</span>
+        </button>
+      )}
 
-      {/* Mobile sidebar — slides in from left */}
+      {/* ── DESKTOP — full sidebar ── */}
+      {!collapsed && (
+        <div className="hidden md:flex md:flex-col md:h-screen md:sticky md:top-0">
+          {sidebarContent}
+        </div>
+      )}
+
+      {/* ── MOBILE — slide-in overlay ── */}
       {isOpen && (
         <>
-          {/* Dark overlay */}
           <div
             className="md:hidden fixed inset-0 bg-black/50 z-40"
             onClick={() => setIsOpen(false)}
           />
-          {/* Sidebar panel */}
           <div className="md:hidden fixed top-0 left-0 h-full z-50 shadow-xl">
             {sidebarContent}
           </div>
