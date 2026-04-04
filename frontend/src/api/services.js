@@ -45,3 +45,30 @@ export const receptionistAPI = {
   lookupPatient: (phone) => api.get(`/receptionist/lookup?phone=${phone}`),
   reQueuePatient: (visitId) => api.post(`/receptionist/requeue/${visitId}`),
 }
+
+// ── IPD ───────────────────────────────────────────────────────────
+export const ipdAPI = {
+  getBeds:          ()              => api.get('/ipd/beds'),
+  createBed:        (data)          => api.post('/ipd/beds', data),
+  updateBed:        (id, data)      => api.put(`/ipd/beds/${id}`, data),
+  updateBedStatus:  (id, status)    => api.patch(`/ipd/beds/${id}/status?status=${status}`),
+  admitPatient:     (data)          => api.post('/ipd/admit', data),
+  getAdmitted:      ()              => api.get('/ipd/admitted'),
+  getAllAdmissions:  ()              => api.get('/ipd/admissions'),
+  addCharge:        (data)          => api.post('/ipd/charges', data),
+  deleteCharge:     (id)            => api.delete(`/ipd/charges/${id}`),
+  addPayment:       (data)          => api.post('/ipd/payments', data),
+  getBill:          (admissionId)   => api.get(`/ipd/bill/${admissionId}`),
+  discharge:        (data)          => api.post('/ipd/discharge', data),
+}
+
+// ── TEMPLATE & FITNESS ────────────────────────────────────────────
+export const templateAPI = {
+  getLetterhead:     ()           => api.get('/template/letterhead'),
+  saveLetterhead:    (data)       => api.post('/template/letterhead', data),
+  getCertificates:   ()           => api.get('/template/fitness'),
+  getCertificate:    (id)         => api.get(`/template/fitness/${id}`),
+  createCertificate: (data)       => api.post('/template/fitness', data),
+  updateCertificate: (id, data)   => api.put(`/template/fitness/${id}`, data),
+  deleteCertificate: (id)         => api.delete(`/template/fitness/${id}`),
+}

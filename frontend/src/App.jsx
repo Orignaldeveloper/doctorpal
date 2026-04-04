@@ -12,6 +12,13 @@ import DoctorQueue from './pages/doctor/DoctorQueue'
 import DoctorPatients from './pages/doctor/DoctorPatients'
 import DoctorReceptionists from './pages/doctor/DoctorReceptionists'
 import DoctorReports from './pages/doctor/DoctorReports'
+import IpdDashboard from './pages/doctor/ipd/IpdDashboard'
+import BedManagement from './pages/doctor/ipd/BedManagement'
+import AdmitPatient from './pages/doctor/ipd/AdmitPatient'
+import PatientDetail from './pages/doctor/ipd/PatientDetail'
+import BillPrint from './pages/doctor/ipd/BillPrint'
+import FitnessCertificatePage from './pages/doctor/FitnessCertificate'
+import ClinicLetterhead from './pages/doctor/ClinicLetterhead'
 import ReceptionistLayout from './pages/receptionist/ReceptionistLayout'
 import AddPatient from './pages/receptionist/AddPatient'
 import TodayQueue from './pages/receptionist/TodayQueue'
@@ -92,6 +99,13 @@ export default function App() {
           <Route path="patients" element={<DoctorPatients />} />
           <Route path="receptionists" element={<DoctorReceptionists />} />
           <Route path="reports" element={<DoctorReports />} />
+          <Route path="ipd" element={<IpdDashboard />} />
+          <Route path="ipd/beds" element={<BedManagement />} />
+          <Route path="ipd/admit" element={<AdmitPatient />} />
+          <Route path="ipd/:admissionId" element={<PatientDetail />} />
+          <Route path="ipd/:admissionId/bill" element={<BillPrint />} />
+          <Route path="fitness" element={<FitnessCertificatePage />} />
+          <Route path="letterhead" element={<ClinicLetterhead />} />
         </Route>
 
         {/* Receptionist */}

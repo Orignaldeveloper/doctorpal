@@ -3,17 +3,32 @@ import Sidebar from '../../components/common/Sidebar'
 
 const navItems = [
   {
-    label: 'Clinic',
+    label: 'OPD',
     items: [
-      { to: '/doctor',              end: true, icon: '⚡', label: 'Live Queue' },
-      { to: '/doctor/patients',             icon: '👤', label: 'Patient History' },
+      { to: '/doctor',             end: true, icon: '⚡', label: 'Live Queue' },
+      { to: '/doctor/patients',             icon: '👤', label: 'Patients' },
       { to: '/doctor/reports',              icon: '▦',  label: 'Reports' },
+    ],
+  },
+  {
+    label: 'IPD',
+    items: [
+      { to: '/doctor/ipd',                  icon: '🏥', label: 'IPD Dashboard' },
+      { to: '/doctor/ipd/beds',             icon: '🛏', label: 'Bed Management' },
+      { to: '/doctor/ipd/admit',            icon: '➕', label: 'Admit Patient' },
+    ],
+  },
+  {
+    label: 'Documents',
+    items: [
+      { to: '/doctor/fitness',              icon: '📋', label: 'Fitness Certificate' },
+      { to: '/doctor/letterhead',           icon: '🖨', label: 'Clinic Template' },
     ],
   },
   {
     label: 'Manage',
     items: [
-      { to: '/doctor/receptionists', icon: '⊞', label: 'Receptionists' },
+      { to: '/doctor/receptionists',        icon: '⊞', label: 'Receptionists' },
     ],
   },
 ]

@@ -48,6 +48,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/api/doctor/**").hasAnyRole("DOCTOR")
+                .requestMatchers("/api/ipd/**").hasAnyRole("DOCTOR")
+                .requestMatchers("/api/template/**").hasAnyRole("DOCTOR")
                 .requestMatchers("/api/receptionist/**").hasAnyRole("RECEPTIONIST", "DOCTOR")
                 .anyRequest().authenticated()
             )
