@@ -4,9 +4,10 @@ import Sidebar from '../../components/common/Sidebar'
 const navItems = [
   {
     label: 'Work',
+    icon: '💼',
     items: [
-      { to: '/receptionist',       end: true, icon: '✚', label: 'Add Patient' },
-      { to: '/receptionist/queue',           icon: '☰', label: "Today's Queue" },
+      { to: '/receptionist',       end: true, icon: '➕', label: 'Add Patient' },
+      { to: '/receptionist/queue',           icon: '🔢', label: "Today's Queue" },
     ],
   },
 ]

@@ -30,4 +30,5 @@ public class DoctorTemplate {
     private boolean showLogo;
     private boolean showWithHeader;
     private boolean showWithoutHeader;
+    private String themeColor; // hex color e.g. #14B8A6
 }

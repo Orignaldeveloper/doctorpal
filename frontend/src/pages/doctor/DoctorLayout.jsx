@@ -4,31 +4,35 @@ import Sidebar from '../../components/common/Sidebar'
 const navItems = [
   {
     label: 'OPD',
+    icon: '🏨',
     items: [
-      { to: '/doctor',             end: true, icon: '⚡', label: 'Live Queue' },
-      { to: '/doctor/patients',             icon: '👤', label: 'Patient History' },
-      { to: '/doctor/reports',              icon: '▦',  label: 'Reports' },
+      { to: '/doctor',           end: true, icon: '⚡', label: 'Live Queue' },
+      { to: '/doctor/patients',             icon: '👥', label: 'Patient History' },
+      { to: '/doctor/reports',              icon: '📊', label: 'Reports' },
     ],
   },
   {
     label: 'IPD',
+    icon: '🏥',
     items: [
-      { to: '/doctor/ipd',                  icon: '🏥', label: 'IPD Dashboard' },
+      { to: '/doctor/ipd', end: true,        icon: '📋', label: 'IPD Dashboard' },
       { to: '/doctor/ipd/beds',             icon: '🛏', label: 'Bed Management' },
       { to: '/doctor/ipd/admit',            icon: '➕', label: 'Admit Patient' },
     ],
   },
   {
     label: 'Documents',
+    icon: '📁',
     items: [
-      { to: '/doctor/fitness',              icon: '📋', label: 'Fitness Certificate' },
+      { to: '/doctor/fitness',              icon: '💪', label: 'Fitness Certificate' },
       { to: '/doctor/letterhead',           icon: '🖨', label: 'Clinic Template' },
     ],
   },
   {
     label: 'Manage',
+    icon: '⚙️',
     items: [
-      { to: '/doctor/receptionists',        icon: '⊞', label: 'Receptionists' },
+      { to: '/doctor/receptionists',        icon: '👩‍💼', label: 'Receptionists' },
     ],
   },
 ]

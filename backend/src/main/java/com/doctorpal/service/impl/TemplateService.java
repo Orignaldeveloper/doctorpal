@@ -40,6 +40,7 @@ public class TemplateService {
         t.setShowLogo(req.isShowLogo());
         t.setShowWithHeader(req.isShowWithHeader());
         t.setShowWithoutHeader(req.isShowWithoutHeader());
+        t.setThemeColor(req.getThemeColor());
         return templateRepository.save(t);
     }
 

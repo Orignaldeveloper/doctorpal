@@ -21,4 +21,5 @@ public class DoctorTemplateRequest {
     private boolean showLogo;
     private boolean showWithHeader;
     private boolean showWithoutHeader;
+     private String themeColor;
 }

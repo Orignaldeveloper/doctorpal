@@ -1,3 +1,7 @@
+:root {
+  --primary: #0F9E7B;
+  --primary-light: #E6F7F3;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
