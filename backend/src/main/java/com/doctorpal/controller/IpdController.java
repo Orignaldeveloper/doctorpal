@@ -6,6 +6,8 @@ import com.doctorpal.dto.response.IpdBillResponse;
 import com.doctorpal.model.*;
 import com.doctorpal.repository.UserRepository;
 import com.doctorpal.service.impl.IpdService;
+
+import io.swagger.v3.oas.annotations.Operation;
 //import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,6 +70,16 @@ public class IpdController {
             @Valid @RequestBody AdmitPatientRequest req) {
         return ResponseEntity.ok(ApiResponse.success("Patient admitted",
                 ipdService.admitPatient(getDoctorId(ud), req)));
+    }
+  
+    @PutMapping("/admissions/{admissionId}")
+    @Operation(summary = "Edit an admitted patient details or change bed")
+    public ResponseEntity<ApiResponse<Admission>> updateAdmission(
+            @AuthenticationPrincipal UserDetails ud,
+            @PathVariable String admissionId,
+            @RequestBody AdmitPatientRequest req) {
+        return ResponseEntity.ok(ApiResponse.success("Admission updated",
+                ipdService.updateAdmission(admissionId, getDoctorId(ud), req)));
     }
 
     @GetMapping("/admitted")

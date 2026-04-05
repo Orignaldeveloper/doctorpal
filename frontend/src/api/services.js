@@ -60,6 +60,7 @@ export const ipdAPI = {
   addPayment:       (data)          => api.post('/ipd/payments', data),
   getBill:          (admissionId)   => api.get(`/ipd/bill/${admissionId}`),
   discharge:        (data)          => api.post('/ipd/discharge', data),
+  updateAdmission:  (id, data)      => api.put(`/ipd/admissions/${id}`, data),
 }
 
 // ── TEMPLATE & FITNESS ────────────────────────────────────────────

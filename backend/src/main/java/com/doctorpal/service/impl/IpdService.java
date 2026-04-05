@@ -101,6 +101,57 @@ public class IpdService {
         }
         return admission;
     }
+    
+    public Admission updateAdmission(String admissionId, String doctorId, AdmitPatientRequest req) {
+        Admission admission = admissionRepository.findById(admissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admission not found"));
+        if (!admission.getDoctorId().equals(doctorId))
+            throw new BadRequestException("Unauthorized");
+        if (admission.getStatus() == Admission.AdmissionStatus.DISCHARGED)
+            throw new BadRequestException("Cannot edit a discharged patient");
+
+        // Handle bed change
+        if (req.getBedId() != null && !req.getBedId().equals(admission.getBedId())) {
+            // Free old bed
+            bedRepository.findById(admission.getBedId()).ifPresent(oldBed -> {
+                oldBed.setStatus(Bed.BedStatus.AVAILABLE);
+                bedRepository.save(oldBed);
+            });
+            // Occupy new bed
+            Bed newBed = bedRepository.findById(req.getBedId())
+                    .orElseThrow(() -> new ResourceNotFoundException("New bed not found"));
+            if (newBed.getStatus() == Bed.BedStatus.OCCUPIED)
+                throw new BadRequestException("Selected bed is already occupied");
+            if (newBed.getStatus() == Bed.BedStatus.MAINTENANCE)
+                throw new BadRequestException("Selected bed is under maintenance");
+            newBed.setStatus(Bed.BedStatus.OCCUPIED);
+            bedRepository.save(newBed);
+            // Update admission bed info
+            admission.setBedId(req.getBedId());
+            admission.setBedRatePerDay(newBed.getRatePerDay());
+            // Add bed charge for today at new rate if not already added
+            boolean alreadyCharged = ipdChargeRepository
+                    .existsByAdmissionIdAndChargeDateAndChargeType(
+                            admissionId, LocalDate.now(), IpdCharge.ChargeType.BED);
+            if (!alreadyCharged) {
+                addBedChargeForDate(admission, LocalDate.now());
+            }
+        }
+
+        // Update patient details
+        admission.setPatientName(req.getPatientName());
+        admission.setPatientPhone(req.getPatientPhone());
+        admission.setPatientAge(req.getPatientAge());
+        admission.setPatientGender(req.getPatientGender());
+        admission.setPatientAddress(req.getPatientAddress());
+        admission.setBloodGroup(req.getBloodGroup());
+        admission.setEmergencyContact(req.getEmergencyContact());
+        admission.setEmergencyPhone(req.getEmergencyPhone());
+        admission.setDiagnosis(req.getDiagnosis());
+        admission.setAdmissionReason(req.getAdmissionReason());
+
+        return admissionRepository.save(admission);
+    }
 
     public List<Admission> getAdmittedPatients(String doctorId) {
         return admissionRepository.findByDoctorIdAndStatus(
