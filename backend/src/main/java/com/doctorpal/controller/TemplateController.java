@@ -7,7 +7,7 @@ import com.doctorpal.model.DoctorTemplate;
 import com.doctorpal.model.FitnessCertificate;
 import com.doctorpal.repository.UserRepository;
 import com.doctorpal.service.impl.TemplateService;
-import io.swagger.v3.oas.annotations.Operation;
+//import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

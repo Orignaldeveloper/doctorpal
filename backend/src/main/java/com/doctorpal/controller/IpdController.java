@@ -6,7 +6,7 @@ import com.doctorpal.dto.response.IpdBillResponse;
 import com.doctorpal.model.*;
 import com.doctorpal.repository.UserRepository;
 import com.doctorpal.service.impl.IpdService;
-import io.swagger.v3.oas.annotations.Operation;
+//import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

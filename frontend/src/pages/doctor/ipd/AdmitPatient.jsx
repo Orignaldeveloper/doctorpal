@@ -3,10 +3,13 @@ import { ipdAPI } from '../../../api/services'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
+const today = () => new Date().toISOString().split('T')[0]
+
 const EMPTY = {
   patientName: '', patientPhone: '', patientAge: '', patientGender: 'Male',
   patientAddress: '', bloodGroup: '', emergencyContact: '', emergencyPhone: '',
-  bedId: '', diagnosis: '', admissionReason: '', advancePaid: ''
+  bedId: '', diagnosis: '', admissionReason: '', advancePaid: '',
+  admissionDate: today()
 }
 
 export default function AdmitPatient() {
@@ -23,21 +26,28 @@ export default function AdmitPatient() {
   }, [])
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setSaving(true)
+    e.preventDefault()
+    setSaving(true)
     try {
-      const r = await ipdAPI.admitPatient({
+      const payload = {
         ...form,
-        patientAge: parseInt(form.patientAge),
-        advancePaid: form.advancePaid ? parseFloat(form.advancePaid) : 0
-      })
+        patientAge:    parseInt(form.patientAge),
+        advancePaid:   form.advancePaid ? parseFloat(form.advancePaid) : 0,
+        admissionDate: form.admissionDate || today()
+      }
+      console.log('Submitting admission with date:', payload.admissionDate)
+      const r = await ipdAPI.admitPatient(payload)
       toast.success(`${form.patientName} admitted successfully!`)
       navigate(`/doctor/ipd/${r.data.data.id}`)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Admission failed')
-    } finally { setSaving(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const selectedBed = beds.find(b => b.id === form.bedId)
+  const selectedBed   = beds.find(b => b.id === form.bedId)
+  const isBackdated   = form.admissionDate && form.admissionDate !== today()
 
   return (
     <div className="p-6 max-w-3xl">
@@ -75,34 +85,41 @@ export default function AdmitPatient() {
             <div>
               <label className="label">Patient Name *</label>
               <input className="input" required placeholder="Full name"
-                value={form.patientName} onChange={e => set('patientName', e.target.value)} />
+                value={form.patientName}
+                onChange={e => set('patientName', e.target.value)} />
             </div>
             <div>
               <label className="label">Phone Number *</label>
               <input className="input" required placeholder="10-digit phone"
-                value={form.patientPhone} onChange={e => set('patientPhone', e.target.value)} />
+                value={form.patientPhone}
+                onChange={e => set('patientPhone', e.target.value)} />
             </div>
             <div>
               <label className="label">Age *</label>
               <input type="number" className="input" required min="1" max="150"
-                value={form.patientAge} onChange={e => set('patientAge', e.target.value)} />
+                value={form.patientAge}
+                onChange={e => set('patientAge', e.target.value)} />
             </div>
             <div>
               <label className="label">Gender *</label>
               <select className="input" value={form.patientGender}
                 onChange={e => set('patientGender', e.target.value)}>
-                <option>Male</option><option>Female</option><option>Other</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
               </select>
             </div>
             <div>
               <label className="label">Blood Group</label>
               <input className="input" placeholder="e.g. B+"
-                value={form.bloodGroup} onChange={e => set('bloodGroup', e.target.value)} />
+                value={form.bloodGroup}
+                onChange={e => set('bloodGroup', e.target.value)} />
             </div>
             <div>
               <label className="label">Address</label>
               <input className="input" placeholder="Patient address"
-                value={form.patientAddress} onChange={e => set('patientAddress', e.target.value)} />
+                value={form.patientAddress}
+                onChange={e => set('patientAddress', e.target.value)} />
             </div>
             <div>
               <label className="label">Emergency Contact Name</label>
@@ -125,6 +142,7 @@ export default function AdmitPatient() {
             Admission Details
           </p>
           <div className="grid grid-cols-2 gap-4">
+
             <div className="col-span-2">
               <label className="label">Select Bed *</label>
               <select className="input" required value={form.bedId}
@@ -137,12 +155,15 @@ export default function AdmitPatient() {
                 ))}
               </select>
             </div>
+
             {selectedBed && (
               <div className="col-span-2">
                 <div className="p-3 bg-teal-50 rounded-xl border border-teal-100 flex items-center gap-3">
                   <span className="text-2xl">🛏</span>
                   <div>
-                    <p className="text-sm font-semibold text-teal-700">{selectedBed.bedNumber}</p>
+                    <p className="text-sm font-semibold text-teal-700">
+                      {selectedBed.bedNumber}
+                    </p>
                     <p className="text-xs text-teal-600">
                       {selectedBed.bedType} · ₹{selectedBed.ratePerDay}/day
                     </p>
@@ -150,11 +171,15 @@ export default function AdmitPatient() {
                 </div>
               </div>
             )}
+
             <div className="col-span-2">
               <label className="label">Primary Diagnosis *</label>
-              <input className="input" required placeholder="e.g. Dengue Fever, Post-op Recovery"
-                value={form.diagnosis} onChange={e => set('diagnosis', e.target.value)} />
+              <input className="input" required
+                placeholder="e.g. Dengue Fever, Post-op Recovery"
+                value={form.diagnosis}
+                onChange={e => set('diagnosis', e.target.value)} />
             </div>
+
             <div className="col-span-2">
               <label className="label">Reason for Admission</label>
               <textarea className="input resize-none" rows={2}
@@ -162,17 +187,45 @@ export default function AdmitPatient() {
                 value={form.admissionReason}
                 onChange={e => set('admissionReason', e.target.value)} />
             </div>
+
             <div>
               <label className="label">Advance Payment (₹)</label>
               <input type="number" className="input" min="0" placeholder="0"
                 value={form.advancePaid}
                 onChange={e => set('advancePaid', e.target.value)} />
             </div>
+
+            <div>
+              <label className="label">
+                Admission Date *
+                {isBackdated && (
+                  <span className="ml-2 text-xs text-amber-500 font-normal">
+                    — Backdated
+                  </span>
+                )}
+              </label>
+              <input
+                type="date"
+                className="input"
+                max={today()}
+                value={form.admissionDate}
+                onChange={e => set('admissionDate', e.target.value)}
+              />
+              {isBackdated && (
+                <p className="text-xs text-amber-500 mt-1">
+                  ⚠ Bed charges will be calculated from {form.admissionDate} to today
+                </p>
+              )}
+            </div>
+
           </div>
         </div>
 
-        <button type="submit" disabled={saving || beds.length === 0}
-          className="btn btn-primary w-full py-3 text-base">
+        <button
+          type="submit"
+          disabled={saving || beds.length === 0}
+          className="btn btn-primary w-full py-3 text-base"
+        >
           {saving ? 'Admitting Patient...' : '🏥 Admit Patient'}
         </button>
       </form>
