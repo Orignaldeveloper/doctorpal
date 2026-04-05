@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class Admission {
     private String admissionReason;
     private LocalDateTime admissionDate;
     private LocalDateTime dischargeDate;
+    private LocalDate expectedDischargeDate;
     private String treatmentSummary;
     private String dischargeAdvice;
     private List<String> medicinesOnDischarge;

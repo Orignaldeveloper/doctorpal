@@ -17,6 +17,7 @@ export default function PatientDetail() {
   const [showDischarge, setShowDischarge] = useState(false)
   const [saving, setSaving]             = useState(false)
   const [medicineInput, setMedicineInput] = useState('')
+  const [dischargeDate, setDischargeDate] = useState('')
 
   const [chargeForm, setChargeForm] = useState({
     admissionId, chargeType: 'MEDICINE', description: '', amount: '', quantity: 1
@@ -30,7 +31,12 @@ export default function PatientDetail() {
 
   const load = () => {
     ipdAPI.getBill(admissionId)
-      .then(r => setBill(r.data.data))
+      .then(r => {
+        setBill(r.data.data)
+        if (r.data.data?.admission?.expectedDischargeDate) {
+          setDischargeDate(r.data.data.admission.expectedDischargeDate)
+        }
+      })
       .catch(() => toast.error('Failed to load patient data'))
       .finally(() => setLoading(false))
   }
@@ -66,7 +72,10 @@ export default function PatientDetail() {
     if (!confirm('Discharge this patient? This cannot be undone.')) return
     setSaving(true)
     try {
-      await ipdAPI.discharge(dischargeForm)
+       await ipdAPI.discharge({
+        ...dischargeForm,
+        dischargeDate: dischargeDate || new Date().toISOString().split('T')[0]
+      })
       toast.success('Patient discharged successfully')
       navigate(`/doctor/ipd/${admissionId}/bill`)
     } catch (err) { toast.error(err.response?.data?.message || 'Discharge failed') }
@@ -368,6 +377,25 @@ export default function PatientDetail() {
             </p>
           </div>
           <form onSubmit={handleDischarge} className="space-y-4">
+
+            <div>
+              <label className="label">
+                Discharge Date *
+                {dischargeDate && (
+                  <span className="ml-2 text-xs text-teal-500 font-normal">
+                    ✓ Pre-filled from admission
+                  </span>
+                )}
+              </label>
+              <input
+                type="date"
+                className="input"
+                required
+                max={new Date().toISOString().split('T')[0]}
+                value={dischargeDate}
+                onChange={e => setDischargeDate(e.target.value)}
+              />
+            </div>
             <div>
               <label className="label">Treatment Summary</label>
               <textarea className="input resize-none" rows={3}

@@ -19,4 +19,5 @@ public class AdmitPatientRequest {
     private String existingPatientId;
     private Double advancePaid;
     private String admissionDate;
+    private String expectedDischargeDate;
 }

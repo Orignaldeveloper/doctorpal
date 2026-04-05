@@ -9,7 +9,8 @@ const EMPTY = {
   patientName: '', patientPhone: '', patientAge: '', patientGender: 'Male',
   patientAddress: '', bloodGroup: '', emergencyContact: '', emergencyPhone: '',
   bedId: '', diagnosis: '', admissionReason: '', advancePaid: '',
-  admissionDate: today()
+  admissionDate: today(),
+  expectedDischargeDate: ''
 }
 
 export default function AdmitPatient() {
@@ -29,13 +30,19 @@ export default function AdmitPatient() {
     e.preventDefault()
     setSaving(true)
     try {
+      // Validate discharge date is after admission date
+      if (form.expectedDischargeDate && form.expectedDischargeDate < form.admissionDate) {
+        toast.error('Discharge date cannot be before admission date!')
+        setSaving(false)
+        return
+      }
       const payload = {
         ...form,
-        patientAge:    parseInt(form.patientAge),
-        advancePaid:   form.advancePaid ? parseFloat(form.advancePaid) : 0,
-        admissionDate: form.admissionDate || today()
+        patientAge:             parseInt(form.patientAge),
+        advancePaid:            form.advancePaid ? parseFloat(form.advancePaid) : 0,
+        admissionDate:          form.admissionDate || today(),
+        expectedDischargeDate:  form.expectedDischargeDate || ''
       }
-      console.log('Submitting admission with date:', payload.admissionDate)
       const r = await ipdAPI.admitPatient(payload)
       toast.success(`${form.patientName} admitted successfully!`)
       navigate(`/doctor/ipd/${r.data.data.id}`)
@@ -46,8 +53,21 @@ export default function AdmitPatient() {
     }
   }
 
-  const selectedBed   = beds.find(b => b.id === form.bedId)
-  const isBackdated   = form.admissionDate && form.admissionDate !== today()
+  const selectedBed = beds.find(b => b.id === form.bedId)
+  const isBackdated = form.admissionDate && form.admissionDate !== today()
+
+  // Calculate days for display
+  const calcDays = () => {
+    if (!form.admissionDate) return 0
+    const end = form.expectedDischargeDate || today()
+    const diff = Math.round(
+      (new Date(end) - new Date(form.admissionDate)) / 86400000
+    ) + 1
+    return diff > 0 ? diff : 1
+  }
+
+  const selectedBedRate = selectedBed?.ratePerDay || 0
+  const estimatedBedCost = calcDays() * selectedBedRate
 
   return (
     <div className="p-6 max-w-3xl">
@@ -209,14 +229,76 @@ export default function AdmitPatient() {
                 className="input"
                 max={today()}
                 value={form.admissionDate}
-                onChange={e => set('admissionDate', e.target.value)}
+                onChange={e => {
+                  set('admissionDate', e.target.value)
+                  // Reset discharge date if admission date changes
+                  set('expectedDischargeDate', '')
+                }}
               />
-              {isBackdated && (
-                <p className="text-xs text-amber-500 mt-1">
-                  ⚠ Bed charges will be calculated from {form.admissionDate} to today
-                </p>
-              )}
             </div>
+
+            {/* Backdated discharge section */}
+            {isBackdated && (
+              <div className="col-span-2">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-3">
+
+                  <p className="text-sm font-semibold text-amber-800">
+                    ⚠ Backdated Admission — Was this patient already discharged?
+                  </p>
+
+                  <div>
+                    <label className="label">
+                      Discharge Date
+                      <span className="ml-2 text-xs text-gray-400 font-normal">
+                        (Leave empty if still admitted)
+                      </span>
+                    </label>
+                    <input
+                      type="date"
+                      className="input"
+                      min={form.admissionDate}
+                      max={today()}
+                      value={form.expectedDischargeDate}
+                      onChange={e => set('expectedDischargeDate', e.target.value)}
+                    />
+                  </div>
+
+                  {/* Summary box */}
+                  {form.expectedDischargeDate ? (
+                    <div className="p-3 bg-white rounded-lg border border-amber-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-semibold text-amber-700">
+                          Bed Charge Calculation
+                        </p>
+                        <p className="text-xs font-bold text-teal-700">
+                          {calcDays()} days × ₹{selectedBedRate} = ₹{estimatedBedCost}
+                        </p>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        📅 {form.admissionDate} → {form.expectedDischargeDate}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        ℹ Status stays <strong>ADMITTED</strong> after submission —
+                        add medicines and other charges, then click Discharge.
+                        Discharge date will be pre-filled automatically.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-white rounded-lg border border-amber-100">
+                      <p className="text-xs text-amber-700">
+                        No discharge date entered — bed charges will be calculated
+                        from <strong>{form.admissionDate}</strong> to <strong>today</strong>.
+                      </p>
+                      {selectedBedRate > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Estimated: {calcDays()} days × ₹{selectedBedRate} = ₹{estimatedBedCost}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
           </div>
         </div>

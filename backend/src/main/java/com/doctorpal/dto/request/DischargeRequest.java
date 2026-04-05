@@ -9,4 +9,5 @@ public class DischargeRequest {
     private String treatmentSummary;
     private String dischargeAdvice;
     private List<String> medicinesOnDischarge;
+    private String dischargeDate;
 }
