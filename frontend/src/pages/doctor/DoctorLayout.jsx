@@ -18,6 +18,7 @@ const navItems = [
       { to: '/doctor/ipd', end: true,        icon: '📋', label: 'IPD Dashboard' },
       { to: '/doctor/ipd/beds',             icon: '🛏', label: 'Bed Management' },
       { to: '/doctor/ipd/admit',            icon: '➕', label: 'Admit Patient' },
+      { to: '/doctor/ipd/discharged',       icon: '📂', label: 'Discharged History' },
     ],
   },
   {

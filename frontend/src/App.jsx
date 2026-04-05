@@ -17,6 +17,7 @@ import BedManagement from './pages/doctor/ipd/BedManagement'
 import AdmitPatient from './pages/doctor/ipd/AdmitPatient'
 import PatientDetail from './pages/doctor/ipd/PatientDetail'
 import BillPrint from './pages/doctor/ipd/BillPrint'
+import DischargedHistory from './pages/doctor/ipd/DischargedHistory'
 import FitnessCertificatePage from './pages/doctor/FitnessCertificate'
 import ClinicLetterhead from './pages/doctor/ClinicLetterhead'
 import ReceptionistLayout from './pages/receptionist/ReceptionistLayout'
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="ipd/admit" element={<AdmitPatient />} />
           <Route path="ipd/:admissionId" element={<PatientDetail />} />
           <Route path="ipd/:admissionId/bill" element={<BillPrint />} />
+          <Route path="ipd/discharged" element={<DischargedHistory />} />
           <Route path="fitness" element={<FitnessCertificatePage />} />
           <Route path="letterhead" element={<ClinicLetterhead />} />
         </Route>
