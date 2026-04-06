@@ -112,11 +112,16 @@ export default function PatientDetail() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="page-title">{admission.patientName}</h1>
             <span className={`badge ${isAdmitted ? 'badge-active' : 'badge-inactive'}`}>
               {admission.status}
             </span>
+            {admission.billNumber && (
+              <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-200">
+                {admission.billNumber}
+              </span>
+            )}
           </div>
           <p className="text-sm text-gray-400 mt-1">
             {admission.patientAge} yrs · {admission.patientGender} · {admission.diagnosis}

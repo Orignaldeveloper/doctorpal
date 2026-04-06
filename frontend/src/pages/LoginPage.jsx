@@ -30,6 +30,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
+          <img src="/logo.png" alt="DoctorPal" className="w-20 h-20 mx-auto mb-3" />
           <h1 className="font-display text-4xl text-teal-600 mb-1">DoctorPal</h1>
           <p className="text-sm text-gray-500">Clinic Queue & Patient Management</p>
         </div>

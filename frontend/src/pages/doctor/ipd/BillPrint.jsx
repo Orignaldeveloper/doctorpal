@@ -101,9 +101,16 @@ export default function BillPrint() {
           <h2 className="text-xl font-bold tracking-widest uppercase">
             {admission.status === 'DISCHARGED' ? 'Discharge Bill' : 'Provisional Bill'}
           </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            Bill Date: {fmtDate(new Date())}
-          </p>
+          <div className="flex justify-center gap-6 mt-1">
+            <p className="text-xs text-gray-400">
+              Bill Date: {fmtDate(new Date())}
+            </p>
+            {admission.billNumber && (
+              <p className="text-xs font-bold text-gray-700">
+                Bill No: {admission.billNumber}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Patient Info Box */}

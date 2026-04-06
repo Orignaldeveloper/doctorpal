@@ -41,6 +41,7 @@ public class Admission {
     private Double totalBill;
     private Double totalPaid;
     private Double balanceDue;
+    private String billNumber;
     private AdmissionStatus status;
     @CreatedDate
     private LocalDateTime createdAt;

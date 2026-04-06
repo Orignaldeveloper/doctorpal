@@ -209,7 +209,7 @@ export default function DischargedHistory() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
-                {['Patient', 'Admission', 'Discharge', 'Days', 'Diagnosis',
+               {['Bill No', 'Patient', 'Admission', 'Discharge', 'Days', 'Diagnosis',
                   'Total Bill', 'Paid', 'Status', 'Actions'].map(h => (
                   <th key={h} className="px-3 py-3 text-left font-medium">{h}</th>
                 ))}
@@ -223,6 +223,15 @@ export default function DischargedHistory() {
                 return (
                   <tr key={a.id}
                     className="border-t border-gray-50 hover:bg-gray-50 transition-colors">
+                        <td className="px-3 py-3">
+                    {a.billNumber ? (
+                      <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg">
+                        {a.billNumber}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
                     <td className="px-3 py-3">
                       <div className="font-medium text-gray-800">{a.patientName}</div>
                       <div className="text-xs text-gray-400">

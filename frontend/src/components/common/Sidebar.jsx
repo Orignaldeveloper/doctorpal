@@ -62,8 +62,8 @@ export default function Sidebar({ navItems, role, roleBadgeClass }) {
       <div className="px-4 py-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-lg">🏥</span>
+           <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-white">
+              <img src="/logo.png" alt="DoctorPal" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="font-bold text-gray-800 text-base leading-tight">DoctorPal</div>

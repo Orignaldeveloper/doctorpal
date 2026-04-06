@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-//import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -85,9 +84,9 @@ public class IpdService {
                 .bedRatePerDay(bed.getRatePerDay()).advancePaid(advance).totalPaid(advance)
                 .status(Admission.AdmissionStatus.ADMITTED).build());
 
-        // Add bed charges from admission date to discharge date (or today if not provided)
-        LocalDate startDate = admission.getAdmissionDate().toLocalDate();
-        LocalDate endDate   = (admission.getExpectedDischargeDate() != null)
+        // Add bed charges from admission date to expectedDischargeDate or today
+        LocalDate startDate  = admission.getAdmissionDate().toLocalDate();
+        LocalDate endDate    = (admission.getExpectedDischargeDate() != null)
                 ? admission.getExpectedDischargeDate()
                 : LocalDate.now();
         LocalDate chargeDate = startDate;
@@ -105,7 +104,7 @@ public class IpdService {
         }
         return admission;
     }
-    
+
     public Admission updateAdmission(String admissionId, String doctorId, AdmitPatientRequest req) {
         Admission admission = admissionRepository.findById(admissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admission not found"));
@@ -116,12 +115,10 @@ public class IpdService {
 
         // Handle bed change
         if (req.getBedId() != null && !req.getBedId().equals(admission.getBedId())) {
-            // Free old bed
             bedRepository.findById(admission.getBedId()).ifPresent(oldBed -> {
                 oldBed.setStatus(Bed.BedStatus.AVAILABLE);
                 bedRepository.save(oldBed);
             });
-            // Occupy new bed
             Bed newBed = bedRepository.findById(req.getBedId())
                     .orElseThrow(() -> new ResourceNotFoundException("New bed not found"));
             if (newBed.getStatus() == Bed.BedStatus.OCCUPIED)
@@ -130,19 +127,14 @@ public class IpdService {
                 throw new BadRequestException("Selected bed is under maintenance");
             newBed.setStatus(Bed.BedStatus.OCCUPIED);
             bedRepository.save(newBed);
-            // Update admission bed info
             admission.setBedId(req.getBedId());
             admission.setBedRatePerDay(newBed.getRatePerDay());
-            // Add bed charge for today at new rate if not already added
             boolean alreadyCharged = ipdChargeRepository
                     .existsByAdmissionIdAndChargeDateAndChargeType(
                             admissionId, LocalDate.now(), IpdCharge.ChargeType.BED);
-            if (!alreadyCharged) {
-                addBedChargeForDate(admission, LocalDate.now());
-            }
+            if (!alreadyCharged) addBedChargeForDate(admission, LocalDate.now());
         }
 
-        // Update patient details
         admission.setPatientName(req.getPatientName());
         admission.setPatientPhone(req.getPatientPhone());
         admission.setPatientAge(req.getPatientAge());
@@ -153,7 +145,6 @@ public class IpdService {
         admission.setEmergencyPhone(req.getEmergencyPhone());
         admission.setDiagnosis(req.getDiagnosis());
         admission.setAdmissionReason(req.getAdmissionReason());
-
         return admissionRepository.save(admission);
     }
 
@@ -211,11 +202,13 @@ public class IpdService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admission not found"));
         if (!admission.getDoctorId().equals(doctorId)) throw new BadRequestException("Unauthorized");
 
-        List<IpdCharge> charges = ipdChargeRepository.findByAdmissionId(admissionId);
+        List<IpdCharge> charges  = ipdChargeRepository.findByAdmissionId(admissionId);
         List<IpdPayment> payments = ipdPaymentRepository.findByAdmissionId(admissionId);
 
-        double totalCharges = charges.stream().mapToDouble(c -> c.getAmount() * c.getQuantity()).sum();
-        double totalPaid    = payments.stream().mapToDouble(IpdPayment::getAmount).sum();
+        double totalCharges = charges.stream()
+                .mapToDouble(c -> c.getAmount() * c.getQuantity()).sum();
+        double totalPaid = payments.stream()
+                .mapToDouble(IpdPayment::getAmount).sum();
 
         Map<String, Double> breakdown = new LinkedHashMap<>();
         for (IpdCharge.ChargeType type : IpdCharge.ChargeType.values()) {
@@ -227,7 +220,8 @@ public class IpdService {
         long totalDays = ChronoUnit.DAYS.between(
                 admission.getAdmissionDate().toLocalDate(),
                 admission.getDischargeDate() != null
-                        ? admission.getDischargeDate().toLocalDate() : LocalDate.now()) + 1;
+                        ? admission.getDischargeDate().toLocalDate()
+                        : LocalDate.now()) + 1;
 
         return IpdBillResponse.builder()
                 .admission(admission).charges(charges).payments(payments)
@@ -247,13 +241,25 @@ public class IpdService {
 
         List<IpdCharge> charges   = ipdChargeRepository.findByAdmissionId(req.getAdmissionId());
         List<IpdPayment> payments = ipdPaymentRepository.findByAdmissionId(req.getAdmissionId());
-        double totalBill = charges.stream().mapToDouble(c -> c.getAmount() * c.getQuantity()).sum();
-        double totalPaid = payments.stream().mapToDouble(IpdPayment::getAmount).sum();
+        double totalBill = charges.stream()
+                .mapToDouble(c -> c.getAmount() * c.getQuantity()).sum();
+        double totalPaid = payments.stream()
+                .mapToDouble(IpdPayment::getAmount).sum();
+
+        // Generate bill number — resets every year per doctor
+        int year = LocalDate.now().getYear();
+        String yearPrefix = "BILL-" + year + "-";
+        long count = admissionRepository.findByDoctorId(doctorId).stream()
+                .filter(a -> a.getBillNumber() != null
+                        && a.getBillNumber().startsWith(yearPrefix))
+                .count() + 1;
+        String billNumber = String.format("BILL-%d-%04d", year, count);
+        admission.setBillNumber(billNumber);
 
         admission.setDischargeDate(
-            req.getDischargeDate() != null && !req.getDischargeDate().isBlank()
-                ? LocalDate.parse(req.getDischargeDate()).atTime(23, 59)
-                : LocalDateTime.now()
+                req.getDischargeDate() != null && !req.getDischargeDate().isBlank()
+                        ? LocalDate.parse(req.getDischargeDate()).atTime(23, 59)
+                        : LocalDateTime.now()
         );
         admission.setTreatmentSummary(req.getTreatmentSummary());
         admission.setDischargeAdvice(req.getDischargeAdvice());
@@ -286,7 +292,7 @@ public class IpdService {
                 });
     }
 
-   private void addBedChargeForDate(Admission admission, LocalDate date) {
+    private void addBedChargeForDate(Admission admission, LocalDate date) {
         ipdChargeRepository.save(IpdCharge.builder()
                 .admissionId(admission.getId()).doctorId(admission.getDoctorId())
                 .chargeType(IpdCharge.ChargeType.BED)
@@ -307,39 +313,24 @@ public class IpdService {
             return LocalDate.parse(dateStr,
                     java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
-            System.out.println("=== expectedDischargeDate parse failed: " + dateStr);
             return null;
         }
     }
 
     private LocalDateTime parseAdmissionDate(String dateStr) {
-        System.out.println("=== parseAdmissionDate received: [" + dateStr + "]");
-        if (dateStr == null || dateStr.isBlank()) {
-            System.out.println("=== null/blank - using now()");
-            return LocalDateTime.now();
-        }
+        if (dateStr == null || dateStr.isBlank()) return LocalDateTime.now();
         try {
-            // "2026-04-01" — date only
             if (dateStr.length() == 10) {
-                LocalDateTime result = java.time.LocalDate.parse(dateStr).atStartOfDay();
-                System.out.println("=== Parsed as date-only: " + result);
-                return result;
+                return LocalDate.parse(dateStr).atStartOfDay();
             }
-            // "2026-04-01T00:00:00.000Z" — ISO with Z
             if (dateStr.endsWith("Z")) {
-                LocalDateTime result = java.time.Instant.parse(dateStr)
+                return java.time.Instant.parse(dateStr)
                         .atZone(java.time.ZoneId.systemDefault())
                         .toLocalDateTime();
-                System.out.println("=== Parsed as ISO-Z: " + result);
-                return result;
             }
-            // "2026-04-01T00:00:00" — ISO without Z
-            LocalDateTime result = LocalDateTime.parse(dateStr,
+            return LocalDateTime.parse(dateStr,
                     java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            System.out.println("=== Parsed as ISO: " + result);
-            return result;
         } catch (Exception e) {
-            System.out.println("=== PARSE FAILED for [" + dateStr + "]: " + e.getMessage());
             return LocalDateTime.now();
         }
     }
